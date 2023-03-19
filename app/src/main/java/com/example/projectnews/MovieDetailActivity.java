@@ -101,11 +101,11 @@ public class MovieDetailActivity extends AppCompatActivity {
         if(newDao.checkNewExistFavor(newId,username)){
             newDao.RemoveMovieFavor(newId, username);
             btnSaveFavor.setBackgroundResource(R.drawable.ic_save_favor);
-            Toast.makeText(MovieDetailActivity.this, "Đã gỡ bài viết khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MovieDetailActivity.this, "Đã gỡ phim khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
             return;
         }
         newDao.AddMovieFavor(newId, username);
-        Toast.makeText(MovieDetailActivity.this, "Thêm bài viết vào danh sách yêu thích thành công", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MovieDetailActivity.this, "Thêm phim vào danh sách yêu thích thành công", Toast.LENGTH_SHORT).show();
         btnSaveFavor.setBackgroundResource(R.drawable.ic_save_favor_done);
         Intent intent = new Intent(this, MovieFavoriteActivity.class);
         startActivity(intent);

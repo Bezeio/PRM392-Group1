@@ -8,6 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -37,13 +39,16 @@ import com.google.android.material.navigation.NavigationView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements MovieCategoryAdapter.CategoryClickInterface {
+public class MainActivity extends AppCompatActivity implements MovieCategoryAdapter.CategoryClickInterface, MovieAdapter.IMovieAdapter {
     Toolbar toolbar;
     ViewFlipper viewFlipper;
     NavigationView navigationView;
-    TextView username1;
+    TextView username1, count;
+    EditText search;
     ListView listView;
     ListView listViewNew;
     ListView listViewThongTin;
@@ -77,43 +82,37 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
         LoadMainView();
         ActionBar();
 
-       ActionViewFlipper();
+        ActionViewFlipper();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(position == 0){
-                        Intent intent = new Intent(MainActivity.this, UpdateProfileActivity.class);
-                        intent.putExtra("username",username1);
-                        startActivity(intent);
+                if (position == 0) {
+                    Intent intent = new Intent(MainActivity.this, UpdateProfileActivity.class);
+                    intent.putExtra("username", username1);
+                    startActivity(intent);
 //                    else {
 //                        Toast.makeText(MainActivity.this,"Bạn không có quyền ",Toast.LENGTH_SHORT).show();
 //                        Log.e("Đăng bài : ","Bạn không có quyền ");
 //                    }
-                }
-                else if(position == 1){
-                    Intent intent = new Intent(MainActivity.this,WeatherActity.class);
+                } else if (position == 1) {
+                    Intent intent = new Intent(MainActivity.this, WeatherActity.class);
                     startActivity(intent);
-                }
-                else if(position == 2){
-                    Intent intent = new Intent(MainActivity.this,MainActivityNote.class);
+                } else if (position == 2) {
+                    Intent intent = new Intent(MainActivity.this, MainActivityNote.class);
                     startActivity(intent);
-                }
-                else if(position == 3){
+                } else if (position == 3) {
                     Intent intent = new Intent(MainActivity.this, Map.class);
                     startActivity(intent);
-                }
-                else if(position == 4){
+                } else if (position == 4) {
 
-                        Intent intent = new Intent(MainActivity.this, Account.class);
-                        startActivity(intent);
+                    Intent intent = new Intent(MainActivity.this, Account.class);
+                    startActivity(intent);
 
-                }
-                else if(position == 5){
+                } else if (position == 5) {
                     Intent intent = new Intent(MainActivity.this, MovieFavoriteActivity.class);
                     startActivity(intent);
 
-                }
-                else{
+                } else {
                     finish();
                 }
             }
@@ -121,12 +120,12 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
 
     }
 
-    private  void ActionViewFlipper(){
-        ArrayList<String> mangquangcao= new ArrayList<>();
+    private void ActionViewFlipper() {
+        ArrayList<String> mangquangcao = new ArrayList<>();
         mangquangcao.add("https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/9/8/980x448_1__29.jpg");
         mangquangcao.add("https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/c/n/cnp_banner_adapt_980x448-01_1_.jpg");
         mangquangcao.add("https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/9/8/980x448_78.png");
-        for(int i=0;i<mangquangcao.size();i++){
+        for (int i = 0; i < mangquangcao.size(); i++) {
             ImageView imageView = new ImageView(getApplicationContext());
             Picasso.get().load(mangquangcao.get(i)).into(imageView);
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -137,22 +136,40 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
         viewFlipper.setFlipInterval(4000);
         viewFlipper.setAutoStart(true);
 
-        Animation animation_side_in = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.slide_in_right);
-        Animation animation_side_out = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.slide_out_right);
+        Animation animation_side_in = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_right);
+        Animation animation_side_out = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_out_right);
         viewFlipper.setInAnimation(animation_side_in);
         viewFlipper.setOutAnimation(animation_side_out);
 
     }
-    private void LoadMainView(){
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        search.clearFocus();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void LoadMainView() {
 
         newsRV = findViewById(R.id.idRvNews);
+        search = findViewById(R.id.search);
+        search.clearFocus();
+
+        count = findViewById(R.id.count);
+        count.setText(dbHelper.getMovieFromCart().size() + "");
         newCateRV = findViewById(R.id.idRVCategories);
         loadingPB = findViewById(R.id.idPBLoading);
         movieArrayList = new ArrayList<>();
-      //  getNews();
+        //  getNews();
         categoryRvModalArrayList = new ArrayList<>();
         getCategories();
+        getCategories();
+        movieArrayList = dbHelper.getAllMovies();
         newsRVAdapter = new MovieAdapter(this, movieArrayList);
+        newsRVAdapter.helper = dbHelper;
+        newsRVAdapter.adapter = this;
+        newsRVAdapter.canAddToCart = true;
         categoryRVAdapter = new MovieCategoryAdapter(categoryRvModalArrayList, this, this::onCategoryClick);
         newsRV.setLayoutManager(new LinearLayoutManager(this));
         newsRV.setAdapter(newsRVAdapter);
@@ -160,51 +177,53 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
         newsRVAdapter.notifyDataSetChanged();
 
 
-       toolbar= findViewById(R.id.toolbarmanhinhchinh);
-        viewFlipper=findViewById(R.id.viewflipper);
+        toolbar = findViewById(R.id.toolbarmanhinhchinh);
+        viewFlipper = findViewById(R.id.viewflipper);
         listView = findViewById(R.id.listviewmanhinhchinh);
-        listViewThongTin=findViewById(R.id.listviewThongTin);
-        navigationView=findViewById(R.id.navigationview);
+        listViewThongTin = findViewById(R.id.listviewThongTin);
+        navigationView = findViewById(R.id.navigationview);
         drawerLayout = findViewById(R.id.drawerlayout);
 
         //navigation
         Intent intent = getIntent();
         String username1 = intent.getStringExtra("username");
-        if(username1 == null){
+        if (username1 == null) {
             username1 = null;
 
         }
-        if(username1!=null) {
+        if (username1 != null) {
             Cursor cursor1 = dbHelper.getDatausername(username1);
-        // String ten = cursor.getString(0);
+            // String ten = cursor.getString(0);
             String sdt = cursor1.getString(6);
-            accountArrayList = new  ArrayList<>();
+            accountArrayList = new ArrayList<>();
 
-            accountArrayList.add(new Account(username1,sdt));
+            accountArrayList.add(new Account(username1, sdt));
 
             AdapterInfo = new AdapterInfo(this, R.layout.navigation_thongtin, accountArrayList);
             listViewThongTin.setAdapter(AdapterInfo);
         }
 
         //Navigation 2
-        categoryArrayList =new ArrayList<>();
-        categoryArrayList.add(new Category("Thông tin",R.drawable.ic_baseline_face_24));
-        categoryArrayList.add(new Category("Thời tiết",R.drawable.ic_baseline_cloud_24));
-        categoryArrayList.add(new Category("Ghi chú",R.drawable.ic_baseline_event_note_24));
-        categoryArrayList.add(new Category("Địa chỉ",R.drawable.ic_baseline_quiz_24));
-        categoryArrayList.add(new Category("Tài khoản",R.drawable.ic_baseline_account_circle_24));
-        categoryArrayList.add(new Category("Yêu thích",R.drawable.ic_baseline_favorite_24));
-        categoryArrayList.add(new Category("Đăng xuất",R.drawable.ic_baseline_login_24));
-        AdapterCategory =new AdapterCategory(this, R.layout.category, categoryArrayList);
+        categoryArrayList = new ArrayList<>();
+        categoryArrayList.add(new Category("Thông tin", R.drawable.ic_baseline_face_24));
+        categoryArrayList.add(new Category("Thời tiết", R.drawable.ic_baseline_cloud_24));
+        categoryArrayList.add(new Category("Ghi chú", R.drawable.ic_baseline_event_note_24));
+        categoryArrayList.add(new Category("Địa chỉ", R.drawable.ic_baseline_quiz_24));
+        categoryArrayList.add(new Category("Tài khoản", R.drawable.ic_baseline_account_circle_24));
+        categoryArrayList.add(new Category("Yêu thích", R.drawable.ic_baseline_favorite_24));
+        categoryArrayList.add(new Category("Đăng xuất", R.drawable.ic_baseline_login_24));
+        AdapterCategory = new AdapterCategory(this, R.layout.category, categoryArrayList);
         listView.setAdapter(AdapterCategory);
     }
 
-    private  void ActionBar(){
+    private void ActionBar() {
         setSupportActionBar(toolbar);
         //set nút của toolbar là true
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //Tạo icon cho toolbar
         toolbar.setNavigationIcon(android.R.drawable.ic_menu_sort_by_size);
+
+        toolbar.setTitle("");
 
         //Tạo sự kiện click cho toolbar
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -217,16 +236,14 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
     }
 
 
-
-    private void getCategories(){
-        categoryRvModalArrayList.add(new CategoryRvModal(1,"Mới nhất", "https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/t/o/tom_jerry_980wx448h.jpg"));
-        categoryRvModalArrayList.add(new CategoryRvModal(2,"Khuyến mãi", "https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/9/8/980x448_80.png"));
-        categoryRvModalArrayList.add(new CategoryRvModal(3,"", "https://www.cgv.vn/media/catalog/product/cache/1/thumbnail/190x260/2e2b8cd282892c71872b9e67d2cb5039/s/u/suzume_vn_teaser_poster.jpg"));
+    private void getCategories() {
+        categoryRvModalArrayList.add(new CategoryRvModal(1, "Mới nhất", "https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/t/o/tom_jerry_980wx448h.jpg"));
+        categoryRvModalArrayList.add(new CategoryRvModal(2, "Sắp chiếu", "https://www.cgv.vn/media/banner/cache/1/b58515f018eb873dafa430b6f9ae0c1e/9/8/980x448_80.png"));
+        categoryRvModalArrayList.add(new CategoryRvModal(3, "", "https://www.cgv.vn/media/catalog/product/cache/1/thumbnail/190x260/2e2b8cd282892c71872b9e67d2cb5039/s/u/suzume_vn_teaser_poster.jpg"));
 
     }
 
-    private void getMovie(){
-
+    private void getMovie() {
 
     }
 
@@ -237,23 +254,38 @@ public class MainActivity extends AppCompatActivity implements MovieCategoryAdap
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.mymenu,menu);
+        getMenuInflater().inflate(R.menu.mymenu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch ((item.getItemId())){
+        switch ((item.getItemId())) {
             case R.id.menu1:
-                Intent intent = new Intent(MainActivity.this,MainTimKiem.class);
-                startActivity(intent);
+                if (this.search.getText().toString().equals("")) {
+                    newsRVAdapter.setData(movieArrayList);
+                }
+                ArrayList<Movie> search = new ArrayList<>();
+                for (Movie movie : movieArrayList) {
+                    if (movie.getTitle().toLowerCase().contains(this.search.getText().toString().toLowerCase()))
+                        search.add(movie);
+                }
+                newsRVAdapter.setData(search);
                 break;
-            default:break;
+
+            case R.id.menu2:
+                startActivity(new Intent(this, CartActivity.class));
+                break;
+            default:
+                break;
 
         }
         return super.onOptionsItemSelected(item);
     }
 
 
-
+    @Override
+    public void update() {
+        count.setText(dbHelper.getMovieFromCart().size() + "");
+    }
 }
