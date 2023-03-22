@@ -20,7 +20,13 @@
         android:theme="@style/Theme.Projectnews"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
+        <activity
+            android:name=".CartActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
 
@@ -37,8 +43,7 @@
             android:value="AIzaSyCcm1-tm594tu_GAMv_9uk6OznoyMGpWSc" />
         <meta-data
             android:name="com.google.android.gms.version"
-            android:exported = "true"
-            />
+            android:exported="true" />
 
         <activity
             android:name=".Map"
@@ -56,6 +61,13 @@
         </activity>
         <activity
             android:name=".NewSearchActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".fragtwo"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"

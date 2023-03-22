@@ -20,7 +20,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="BÁO MỚI"
+            android:text="SeeNow"
 
             android:textColor="@color/grey"
             android:textAlignment="center"
@@ -149,8 +149,9 @@
                 android:text="Create Date"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
-
         </RelativeLayout>
+
+
     </RelativeLayout>
     </ScrollView>
 
@@ -162,4 +163,5 @@
         android:id="@+id/navbottom">
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
+
 </RelativeLayout>
